@@ -1,12 +1,10 @@
 {
-  "projectId": "excellent-dispatcher-ht3g1",
-  "appId": "1:326676867985:web:67ccb025b4e4033b4d4830",
-  "apiKey": "AIzaSyCoJma63ExeyVbqwTafN1sBnQJvToDnPV0",
-  "authDomain": "excellent-dispatcher-ht3g1.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-a3fcbc01-393d-4f7e-94f9-df00a43bcb37",
-  "storageBucket": "excellent-dispatcher-ht3g1.firebasestorage.app",
-  "messagingSenderId": "326676867985",
-  "measurementId": "",
-  "oAuthClientId": "326676867985-ljv0otarhn993lmigggo2no46ou1i7i8.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "green-power-and-construction",
+  "appId": "1:220985037702:web:bba3c153f2a649ccddd207",
+  "apiKey": "AIzaSyDbMlbDMb9PiSVQV1lr8qsX7OpY_Smu0D0",
+  "authDomain": "green-power-and-construction.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "green-power-and-construction.firebasestorage.app",
+  "messagingSenderId": "220985037702",
+  "measurementId": "G-8MVRG59ZGQ"
 }

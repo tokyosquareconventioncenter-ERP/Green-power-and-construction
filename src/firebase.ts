@@ -10,17 +10,29 @@ import {
 } from 'firebase/firestore';
 import firebaseAppletConfig from '../firebase-applet-config.json';
 
-// Get config from VITE_ FIREBASE env vars or fall back to firebase-applet-config.json
+// Read optional custom config stored in localStorage from Settings
+let customConfig: Record<string, string> = {};
+try {
+  const saved = localStorage.getItem('custom_firebase_config');
+  if (saved) {
+    customConfig = JSON.parse(saved);
+  }
+} catch {
+  // Ignore JSON parse errors
+}
+
+// Get config from localStorage, VITE_FIREBASE env vars or fall back to firebase-applet-config.json
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseAppletConfig.apiKey,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseAppletConfig.authDomain,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseAppletConfig.projectId,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
+  apiKey: customConfig.apiKey || import.meta.env.VITE_FIREBASE_API_KEY || firebaseAppletConfig.apiKey,
+  authDomain: customConfig.authDomain || import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseAppletConfig.authDomain,
+  projectId: customConfig.projectId || import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseAppletConfig.projectId,
+  storageBucket: customConfig.storageBucket || import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseAppletConfig.storageBucket,
+  messagingSenderId: customConfig.messagingSenderId || import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseAppletConfig.messagingSenderId,
+  appId: customConfig.appId || import.meta.env.VITE_FIREBASE_APP_ID || firebaseAppletConfig.appId,
 };
 
-const databaseId = import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseAppletConfig.firestoreDatabaseId;
+const rawDbId = import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || firebaseAppletConfig.firestoreDatabaseId;
+const databaseId = (rawDbId && rawDbId !== '(default)' && rawDbId !== 'default') ? rawDbId : undefined;
 
 // Primary Firebase App
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -28,13 +40,19 @@ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getA
 // Initialize Firestore with offline persistence (persistentLocalCache + persistentMultipleTabManager)
 let firestoreInstance;
 try {
-  firestoreInstance = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager(),
-    }),
-  }, databaseId);
+  firestoreInstance = databaseId
+    ? initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      }, databaseId)
+    : initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
 } catch {
-  firestoreInstance = getFirestore(app, databaseId);
+  firestoreInstance = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
 }
 
 export const db = firestoreInstance;

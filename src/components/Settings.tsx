@@ -109,10 +109,10 @@ export const Settings: React.FC<SettingsProps> = ({
   // Firebase Config Form States
   const [autoSync, setAutoSync] = useState(true);
   const [showConfigForm, setShowConfigForm] = useState(false);
-  const [apiKey, setApiKey] = useState('AIzaSyCoJma63ExeyVbqwTafN1sBnQJvToDnPV0');
-  const [projectId, setProjectId] = useState('excellent-dispatcher-ht3g1');
-  const [appId, setAppId] = useState('1:326676867985:web:67ccb025b4e4033b4d4830');
-  const [authDomain, setAuthDomain] = useState('excellent-dispatcher-ht3g1.firebaseapp.com');
+  const [apiKey, setApiKey] = useState('AIzaSyDbMlbDMb9PiSVQV1lr8qsX7OpY_Smu0D0');
+  const [projectId, setProjectId] = useState('green-power-and-construction');
+  const [appId, setAppId] = useState('1:220985037702:web:bba3c153f2a649ccddd207');
+  const [authDomain, setAuthDomain] = useState('green-power-and-construction.firebaseapp.com');
 
   // Modals Toggle
   const [showQrModal, setShowQrModal] = useState(false);
@@ -218,20 +218,106 @@ export const Settings: React.FC<SettingsProps> = ({
     e.preventDefault();
     const config = { apiKey, projectId, appId, authDomain };
     localStorage.setItem('custom_firebase_config', JSON.stringify(config));
-    setActionMessage('✅ ফায়ারবেস কনফিগারেশন স্থানীয়ভাবে সংরক্ষণ করা হয়েছে!');
-    setTimeout(() => setActionMessage(null), 4000);
+    setActionMessage('✅ ফায়ারবেস কনফিগারেশন রিলোড করা হচ্ছে...');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1200);
+  };
+
+  // Upload all local data to Cloud Firestore
+  const handleUploadToCloud = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      setActionMessage('⏳ সকল ডাটা ক্লাউডে আপলোড হচ্ছে...');
+
+      // Company Settings
+      const updatedCompanyData: CompanySetting = {
+        name: name.trim(),
+        nameBn: nameBn.trim(),
+        logoUrl,
+        ownerName: ownerName.trim(),
+        ownerPhotoUrl,
+        phone: phone.trim(),
+        address: address.trim(),
+        ownerMessage: ownerMessage.trim(),
+      };
+      await setDoc(doc(db, 'settings', 'company'), updatedCompanyData);
+
+      // Workers
+      for (const w of workers) {
+        if (w.id) await setDoc(doc(db, 'workers', w.id), w);
+      }
+
+      // Sites
+      for (const s of sites) {
+        if (s.id) await setDoc(doc(db, 'sites', s.id), s);
+      }
+
+      // Attendance
+      for (const a of attendance) {
+        if (a.id) await setDoc(doc(db, 'attendance', a.id), a);
+      }
+
+      // Finances
+      for (const [wId, fin] of Object.entries(finances)) {
+        if (wId) await setDoc(doc(db, 'finances', wId), fin as any);
+      }
+
+      // Income
+      for (const inc of income) {
+        if (inc.id) await setDoc(doc(db, 'income', inc.id), inc);
+      }
+
+      // Expenses
+      for (const exp of expenses) {
+        if (exp.id) await setDoc(doc(db, 'expenses', exp.id), exp);
+      }
+
+      setActionMessage('🎉 সকল ডাটা সফলভাবে ক্লাউড ফায়ারবেসে জমা হয়েছে! ফায়ারবেস কনসোলে চেক করুন।');
+    } catch (err: unknown) {
+      console.error('Cloud Upload Error:', err);
+      setError('ক্লাউডে ডাটা আপলোড করতে সমস্যা হয়েছে। ফায়ারবেস রুলস বা ইন্টারনেট কানেকশন যাচাই করুন।');
+    } finally {
+      setSaving(false);
+      setTimeout(() => setActionMessage(null), 6000);
+    }
+  };
+
+  // Download / Sync from Cloud
+  const handleDownloadFromCloud = async () => {
+    try {
+      setActionMessage('⏳ ক্লাউড থেকে ডাটা সিঙ্ক করা হচ্ছে...');
+      const snapshot = await getDocs(collection(db, 'workers'));
+      setActionMessage(`🎉 ক্লাউড সিঙ্ক সফল! (${snapshot.docs.length} টি কর্মী রেকর্ড সিঙ্ক হয়েছে)`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err: unknown) {
+      console.error(err);
+      setError('ক্লাউড থেকে ডাউনলোড করতে সমস্যা হয়েছে।');
+    }
   };
 
   // Test Connection
   const handleTestConnection = async () => {
+    setError(null);
     try {
-      setActionMessage('⏳ ফায়ারবেস কানেকশন টেস্ট করা হচ্ছে...');
-      await getDocs(collection(db, 'workers'));
-      setActionMessage('🟢 ক্লাউড কানেকশন সফল! ফায়ারবেস ডাটাবেজ সচল রয়েছে।');
+      setActionMessage('⏳ ফায়ারবেস ক্লাউড কানেকশন টেস্ট করা হচ্ছে...');
+      const snapshot = await getDocs(collection(db, 'workers'));
+      setActionMessage(`🟢 ক্লাউড কানেকশন সফল! ফায়ারবেস ডাটাবেজ সচল রয়েছে। (${snapshot.docs.length} টি রেকর্ড পাওয়া গেছে)`);
     } catch (err: unknown) {
-      setActionMessage('❌ কানেকশন ব্যর্থ হয়েছে। ইন্টারনেটের উপস্থিতি নিশ্চিত করুন।');
+      console.error('Firebase test error:', err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      if (errorMessage.includes('permission-denied')) {
+        setError('❌ পারমিশন এরর: ফায়ারবেসে Firestore Security Rules এ `allow read, write: if true;` দিয়ে Publish বাটন চাপুন।');
+      } else {
+        setError(`❌ ফায়ারবেস কানেকশনে সমস্যা: ${errorMessage}`);
+      }
     }
-    setTimeout(() => setActionMessage(null), 5000);
+    setTimeout(() => {
+      setActionMessage(null);
+    }, 6000);
   };
 
   // Copy Web Link
@@ -1013,8 +1099,8 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => handleSaveSettings()}
-              className="py-3 px-4 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+              onClick={handleUploadToCloud}
+              className="py-3 px-4 rounded-xl bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/50 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
             >
               <UploadCloud className="w-4 h-4" />
               <span>☁️ ক্লাউডে আপলোড</span>
@@ -1022,8 +1108,8 @@ export const Settings: React.FC<SettingsProps> = ({
 
             <button
               type="button"
-              onClick={handleTestConnection}
-              className="py-3 px-4 rounded-xl bg-sky-950/90 hover:bg-sky-900 text-sky-300 border border-sky-500/50 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+              onClick={handleDownloadFromCloud}
+              className="py-3 px-4 rounded-xl bg-sky-950/90 hover:bg-sky-900 text-sky-300 border border-sky-500/50 font-bold text-xs flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
             >
               <DownloadCloud className="w-4 h-4" />
               <span>📥 ক্লাউড থেকে ডাউনলোড</span>
