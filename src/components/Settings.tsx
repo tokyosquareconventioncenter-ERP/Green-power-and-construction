@@ -224,57 +224,78 @@ export const Settings: React.FC<SettingsProps> = ({
     }, 1200);
   };
 
-  // Upload all local data to Cloud Firestore
+  // Upload / Seed Real Project Data to Cloud Firestore
   const handleUploadToCloud = async () => {
     setSaving(true);
     setError(null);
     try {
-      setActionMessage('⏳ সকল ডাটা ক্লাউডে আপলোড হচ্ছে...');
+      setActionMessage('⏳ আপনার সকল প্রজেক্ট ডাটা ক্লাউড ফায়ারবেসে লোড হচ্ছে...');
 
-      // Company Settings
+      // 1. Company Settings
       const updatedCompanyData: CompanySetting = {
-        name: name.trim(),
-        nameBn: nameBn.trim(),
-        logoUrl,
-        ownerName: ownerName.trim(),
-        ownerPhotoUrl,
-        phone: phone.trim(),
-        address: address.trim(),
-        ownerMessage: ownerMessage.trim(),
+        name: 'Green power and construction engineering',
+        nameBn: nameBn.trim() || 'গ্রীন পাওয়ার এন্ড কনস্ট্রাকশন ইঞ্জিনিয়ারিং',
+        logoUrl: logoUrl || '/logo.svg',
+        ownerName: 'মোঃ আখেরুজামান রুকন',
+        ownerPhotoUrl: ownerPhotoUrl || '/contractor.svg',
+        phone: '01716661744',
+        address: '১১৮/১ শান্তিনীর, শান্তিনগর, দিগার কান্দা সদর ময়মনসিংহ',
+        ownerMessage: '“কাজের নিরাপত্তা আগে, তারপর কাজ। সততা, সময়ানুবর্তিতা ও নিখুঁত ওয়্যারিংয়ের মাধ্যমে আমরা \'গ্রীন পাওয়ার এন্ড কনস্ট্রাকশন\' কে সামনে এগিয়ে নিয়ে যাব।”',
       };
       await setDoc(doc(db, 'settings', 'company'), updatedCompanyData);
 
-      // Workers
-      for (const w of workers) {
-        if (w.id) await setDoc(doc(db, 'workers', w.id), w);
+      // 2. Real Project Sites
+      const realSites: Site[] = [
+        { id: 'site_chhayabithi', name: 'ছায়াবীথি টাওয়ার মরাখোলা', createdAt: new Date().toISOString() },
+        { id: 'site_bondhon', name: 'বন্ধন টাওয়ার কাচি জুলি', createdAt: new Date().toISOString() },
+        { id: 'site_amirabad', name: 'আমিরাবাদ প্রজেক্ট', createdAt: new Date().toISOString() },
+      ];
+      for (const s of realSites) {
+        await setDoc(doc(db, 'sites', s.id), s);
       }
 
-      // Sites
-      for (const s of sites) {
-        if (s.id) await setDoc(doc(db, 'sites', s.id), s);
+      // 3. Real Project Workers
+      const realWorkers: Worker[] = [
+        { id: 'w_manju', name: 'মোঃ মঞ্জু', role: 'ইলেকট্রিশিয়ান', phone: '01716661744', createdAt: new Date().toISOString() },
+        { id: 'w_shuvo', name: 'মোঃ শুভ', role: 'ইলেকট্রিশিয়ান', phone: '', createdAt: new Date().toISOString() },
+        { id: 'w_saikat', name: 'মোঃ সৈকত', role: 'হেল্পার', phone: '', createdAt: new Date().toISOString() },
+        { id: 'w_sohel', name: 'মোঃ সোহেল', role: 'ইলেকট্রিশিয়ান', phone: '', createdAt: new Date().toISOString() },
+        { id: 'w_tamim', name: 'মোঃ তামিম', role: 'হেল্পার', phone: '', createdAt: new Date().toISOString() },
+        { id: 'w_rakib', name: 'মোঃ রাকিব', role: 'ইলেকট্রিশিয়ান', phone: '', createdAt: new Date().toISOString() },
+      ];
+      for (const w of realWorkers) {
+        await setDoc(doc(db, 'workers', w.id), w);
       }
 
-      // Attendance
-      for (const a of attendance) {
-        if (a.id) await setDoc(doc(db, 'attendance', a.id), a);
+      // 4. Real Worker Finances (Rates & Advance)
+      const realFinances: Record<string, any> = {
+        w_manju: { workerId: 'w_manju', rate: 800, prevDue: 0, advance: 500, paid: 0, manualDays: 1, manualPayable: 800 },
+        w_shuvo: { workerId: 'w_shuvo', rate: 600, prevDue: 0, advance: 0, paid: 0, manualDays: 1, manualPayable: 600 },
+        w_saikat: { workerId: 'w_saikat', rate: 350, prevDue: 0, advance: 0, paid: 0, manualDays: 1, manualPayable: 350 },
+        w_sohel: { workerId: 'w_sohel', rate: 500, prevDue: 0, advance: 0, paid: 0, manualDays: 1, manualPayable: 500 },
+        w_tamim: { workerId: 'w_tamim', rate: 350, prevDue: 0, advance: 0, paid: 0, manualDays: 1, manualPayable: 350 },
+        w_rakib: { workerId: 'w_rakib', rate: 600, prevDue: 0, advance: 0, paid: 0, manualDays: 1, manualPayable: 600 },
+      };
+      for (const [wId, fin] of Object.entries(realFinances)) {
+        await setDoc(doc(db, 'workerFinance', wId), fin);
       }
 
-      // Finances
-      for (const [wId, fin] of Object.entries(finances)) {
-        if (wId) await setDoc(doc(db, 'finances', wId), fin as any);
+      // 5. Attendance Entries
+      const today = new Date().toISOString().slice(0, 10);
+      const realAttendance: AttendanceRecord[] = [
+        { id: 'att_manju', date: today, workerId: 'w_manju', workerName: 'মোঃ মঞ্জু', siteId: 'site_chhayabithi', siteName: 'ছায়াবীথি টাওয়ার মরাখোলা', present: 1, overtime: 0, taken: 500 },
+        { id: 'att_shuvo', date: today, workerId: 'w_shuvo', workerName: 'মোঃ শুভ', siteId: 'site_amirabad', siteName: 'আমিরাবাদ প্রজেক্ট', present: 1, overtime: 0, taken: 0 },
+        { id: 'att_saikat', date: today, workerId: 'w_saikat', workerName: 'মোঃ সৈকত', siteId: 'site_amirabad', siteName: 'আমিরাবাদ প্রজেক্ট', present: 1, overtime: 0, taken: 0 },
+        { id: 'att_sohel', date: today, workerId: 'w_sohel', workerName: 'মোঃ সোহেল', siteId: 'site_amirabad', siteName: 'আমিরাবাদ প্রজেক্ট', present: 1, overtime: 0, taken: 0 },
+        { id: 'att_tamim', date: today, workerId: 'w_tamim', workerName: 'মোঃ তামিম', siteId: 'site_amirabad', siteName: 'আমিরাবাদ প্রজেক্ট', present: 1, overtime: 0, taken: 0 },
+        { id: 'att_rakib', date: today, workerId: 'w_rakib', workerName: 'মোঃ রাকিব', siteId: 'site_chhayabithi', siteName: 'ছায়াবীথি টাওয়ার মরাখোলা', present: 1, overtime: 0, taken: 0 },
+      ];
+      for (const a of realAttendance) {
+        await setDoc(doc(db, 'attendance', a.id), a);
       }
 
-      // Income
-      for (const inc of income) {
-        if (inc.id) await setDoc(doc(db, 'income', inc.id), inc);
-      }
-
-      // Expenses
-      for (const exp of expenses) {
-        if (exp.id) await setDoc(doc(db, 'expenses', exp.id), exp);
-      }
-
-      setActionMessage('🎉 সকল ডাটা সফলভাবে ক্লাউড ফায়ারবেসে জমা হয়েছে! ফায়ারবেস কনসোলে চেক করুন।');
+      setActionMessage('🎉 আপনার সকল প্রজেক্টের আসল ডাটা (কর্মী, সাইট, হাজিরা) সফলভাবে ফায়ারবেসে জমা হয়েছে!');
+      setTimeout(() => window.location.reload(), 1500);
     } catch (err: unknown) {
       console.error('Cloud Upload Error:', err);
       setError('ক্লাউডে ডাটা আপলোড করতে সমস্যা হয়েছে। ফায়ারবেস রুলস বা ইন্টারনেট কানেকশন যাচাই করুন।');
@@ -445,35 +466,14 @@ export const Settings: React.FC<SettingsProps> = ({
     }
   };
 
-  // Demo Data Load
+  // Demo / Real Data Load
   const handleLoadDemoData = async () => {
     try {
-      setActionMessage('⏳ ডেমো ডাটা লোড করা হচ্ছে...');
-
-      const sampleSites = [
-        { id: 'site_1', name: 'মিরপুর ১০ রেসিডেন্সিয়াল ওয়্যারিং', createdAt: new Date().toISOString() },
-        { id: 'site_2', name: 'ধানমন্ডি ১৫ কমার্শিয়াল প্রজেক্ট', createdAt: new Date().toISOString() },
-      ];
-      for (const s of sampleSites) {
-        await setDoc(doc(db, 'sites', s.id), s);
-      }
-
-      const sampleWorkers = [
-        { id: 'w_1', name: 'মোঃ রফিকুল ইসলাম', role: 'ইলেকট্রিশিয়ান', phone: '01711223344', createdAt: new Date().toISOString() },
-        { id: 'w_2', name: 'মোঃ সাইদুল আলম', role: 'হেল্পার', phone: '01855667788', createdAt: new Date().toISOString() },
-      ];
-      for (const w of sampleWorkers) {
-        await setDoc(doc(db, 'workers', w.id), w);
-      }
-
-      await setDoc(doc(db, 'finances', 'w_1'), { workerId: 'w_1', rate: 900, prevDue: 0, advance: 500, paid: 0, manualDays: null, manualPayable: null });
-      await setDoc(doc(db, 'finances', 'w_2'), { workerId: 'w_2', rate: 600, prevDue: 0, advance: 200, paid: 0, manualDays: null, manualPayable: null });
-
-      setActionMessage('✅ ডেমো ডাটা সফলভাবে লোড হয়েছে!');
-      setTimeout(() => window.location.reload(), 1500);
+      setActionMessage('⏳ আপনার আসল প্রজেক্ট ডাটা ফায়ারবেসে লোড করা হচ্ছে...');
+      await handleUploadToCloud();
     } catch (err: unknown) {
       console.error(err);
-      setError('ডেমো ডাটা লোড করতে সমস্যা হয়েছে।');
+      setError('ডাটা লোড করতে সমস্যা হয়েছে।');
     }
   };
 
