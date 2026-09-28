@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var _f = window.fetch;
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return _f; },
+            set: function(v) { _f = v; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>বিজলী কন্ট্রাক্টর — ইলেকট্রিক্যাল সাইট ও কর্মী হিসাব</title>
+    <meta name="description" content="ইলেকট্রিক্যাল কন্ট্রাক্টরের জন্য দৈনিক হাজিরা, ওভারটাইম, মজুরি, অগ্রিম ও সাইট খরচের সহজ বাংলা অ্যাপ" />
+    <meta property="og:title" content="বিজলী কন্ট্রাক্টর — ইলেকট্রিক্যাল সাইট ও কর্মী হিসাব" />
+    <meta property="og:description" content="ইলেকট্রিক্যাল কন্ট্রাক্টরের জন্য দৈনিক হাজিরা, ওভারটাইম, মজুরি, অগ্রিম ও সাইট খরচের সহজ বাংলা অ্যাপ" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- PWA & Mobile status bar -->
+    <meta name="theme-color" content="#18181b" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="বিজলী হিসাব" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
+    <!-- Google Font: Noto Sans Bengali & Anek Bangla (Clear Bengali Numerals: ১, ২, ৩) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-zinc-950 text-zinc-100 min-h-screen font-['Noto_Sans_Bengali','Anek_Bangla','Hind_Siliguri',sans-serif] antialiased selection:bg-amber-500/30 selection:text-amber-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

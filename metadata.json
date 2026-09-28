@@ -1,0 +1,6 @@
+{
+  "name": "Bijli Contractor - Electrical Site & Worker Manager",
+  "description": "Mobile-first PWA for electrical contractors in Bangladesh to manage daily worker attendance, overtime, wages, advance payments, site income, and expenses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <circle cx="100" cy="100" r="94" fill="#ffffff" stroke="#111827" stroke-width="6"/>
+  <!-- Top Right Red -->
+  <path d="M 100 100 L 100 6 A 94 94 0 0 1 194 100 Z" fill="#dc2626"/>
+  <!-- Bottom Right Green -->
+  <path d="M 100 100 L 194 100 A 94 94 0 0 1 100 194 Z" fill="#16a34a"/>
+  <!-- Bottom Left Red -->
+  <path d="M 100 100 L 100 194 A 94 94 0 0 1 6 100 Z" fill="#dc2626"/>
+  <!-- Top Left Green -->
+  <path d="M 100 100 L 6 100 A 94 94 0 0 1 100 6 Z" fill="#16a34a"/>
+  
+  <!-- Swoosh 1 -->
+  <path d="M 50 100 C 50 35, 150 35, 150 100 C 120 70, 80 70, 50 100 Z" fill="#ffffff"/>
+  <!-- Swoosh 2 -->
+  <path d="M 150 100 C 150 165, 50 165, 50 100 C 80 130, 120 130, 150 100 Z" fill="#ffffff"/>
+
+  <!-- Green 'G' -->
+  <text x="100" y="62" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="50" fill="#15803d" text-anchor="middle">G</text>
+  
+  <!-- Red 'P' -->
+  <text x="100" y="152" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="50" fill="#b91c1c" text-anchor="middle">P</text>
+  
+  <!-- Yellow Lightning Bolt -->
+  <polygon points="106,62 82,102 100,102 88,138 116,92 98,92" fill="#eab308" stroke="#000000" stroke-width="2"/>
+</svg>
